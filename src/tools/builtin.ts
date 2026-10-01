@@ -1,0 +1,2 @@
+import {ToolRegistry,type ToolContext} from "./types";
+export function createBuiltinTools(){const r=new ToolRegistry();r.register({id:"core.echo",name:"Echo",description:"Returns supplied text. Safe diagnostic tool.",version:"1.0.0",inputSchema:{type:"object",properties:{text:{type:"string"}},required:["text"]},permissions:["tool:core.echo"],execute:async(input:any,ctx:ToolContext)=>{if(!ctx.permissions.has("tool:core.echo"))throw new Error("Permission denied");return {text:String(input.text??"")};}});return r;}
