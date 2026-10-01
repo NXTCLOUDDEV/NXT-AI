@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS conversations (id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,title TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,deleted_at TEXT,FOREIGN KEY(organization_id) REFERENCES organizations(id));
+CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,conversation_id TEXT NOT NULL,role TEXT NOT NULL,content TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(organization_id) REFERENCES organizations(id),FOREIGN KEY(conversation_id) REFERENCES conversations(id));
+CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,status TEXT NOT NULL,input TEXT NOT NULL,plan_json TEXT,result_json TEXT,error TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,completed_at TEXT,FOREIGN KEY(organization_id) REFERENCES organizations(id));
+CREATE TABLE IF NOT EXISTS task_steps (id TEXT PRIMARY KEY,task_id TEXT NOT NULL,organization_id TEXT NOT NULL,step_index INTEGER NOT NULL,status TEXT NOT NULL,input_json TEXT,output_json TEXT,error TEXT,started_at TEXT,completed_at TEXT,FOREIGN KEY(task_id) REFERENCES tasks(id));
+CREATE TABLE IF NOT EXISTS tool_calls (id TEXT PRIMARY KEY,task_id TEXT,organization_id TEXT NOT NULL,tool_id TEXT NOT NULL,version TEXT,input_json TEXT,output_json TEXT,status TEXT NOT NULL,error TEXT,started_at TEXT,completed_at TEXT,FOREIGN KEY(task_id) REFERENCES tasks(id));
+CREATE TABLE IF NOT EXISTS memories (id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,user_id TEXT,memory_type TEXT NOT NULL,content TEXT NOT NULL,importance REAL NOT NULL DEFAULT 0.5,source TEXT,expires_at TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,deleted_at TEXT);
+CREATE TABLE IF NOT EXISTS usage_events (id TEXT PRIMARY KEY,organization_id TEXT,task_id TEXT,provider TEXT,model TEXT,input_tokens INTEGER NOT NULL DEFAULT 0,output_tokens INTEGER NOT NULL DEFAULT 0,estimated_cost_usd REAL NOT NULL DEFAULT 0,latency_ms INTEGER,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_conversations_org_updated ON conversations(organization_id,updated_at);
+CREATE INDEX IF NOT EXISTS idx_messages_conv_created ON messages(conversation_id,created_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_org_status_updated ON tasks(organization_id,status,updated_at);
+CREATE INDEX IF NOT EXISTS idx_task_steps_task ON task_steps(task_id,step_index);
+CREATE INDEX IF NOT EXISTS idx_tool_calls_task ON tool_calls(task_id,started_at);
+CREATE INDEX IF NOT EXISTS idx_memories_org_type ON memories(organization_id,memory_type,updated_at);
+CREATE INDEX IF NOT EXISTS idx_usage_org_created ON usage_events(organization_id,created_at);
