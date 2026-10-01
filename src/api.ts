@@ -11,13 +11,14 @@ function auth(c:any):{organizationId:string;userId?:string}|Response{
   return {organizationId:c.req.header("x-organization-id")??"default",userId:c.req.header("x-user-id")??undefined};
 }
 
-export const api=new Hono<{Bindings:Env}>();
-api.use("*",async(c,next)=>{const a=auth(c);if(a instanceof Response)return a; c.set("identity",a as any);await next();});
+type Identity={organizationId:string;userId?:string};
+export const api=new Hono<{Bindings:Env;Variables:{identity:Identity}}>();
+api.use("*",async(c,next)=>{const a=auth(c);if(a instanceof Response)return a; c.set("identity",a as Identity);await next();});
 
 api.get("/models",c=>c.json({data:[{provider:"openai",configured:Boolean(c.env.OPENAI_API_KEY)},{provider:"anthropic",configured:Boolean(c.env.ANTHROPIC_API_KEY)}]}));
 
 api.post("/chat",async c=>{
-  const identity=c.get("identity") as {organizationId:string;userId?:string};
+  const identity=c.get("identity");
   const body=await c.req.json<{messages?:Array<{role:"system"|"user"|"assistant"|"tool";content:string}>;message?:string;provider?:string;model?:string}>();
   const messages=body.messages??(body.message?[{role:"user",content:body.message}]:[]);
   if(messages.length===0)return c.json({error:{code:"VALIDATION_ERROR",message:"message or messages is required"}},400);
@@ -27,7 +28,7 @@ api.post("/chat",async c=>{
 });
 
 api.post("/tasks",async c=>{
-  const identity=c.get("identity") as {organizationId:string};
+  const identity=c.get("identity");
   const body=await c.req.json<{input?:string}>();
   if(typeof body.input!=="string"||body.input.trim().length===0)return c.json({error:{code:"VALIDATION_ERROR",message:"input is required"}},400);
   const taskId=await new TaskService(c.env).create(identity.organizationId,body.input.trim());
@@ -40,6 +41,6 @@ api.post("/conversations",async c=>{const identity=c.get("identity") as {organiz
 api.get("/conversations/:id/messages",async c=>{const identity=c.get("identity") as {organizationId:string};const rows=await new Db(c.env).recentMessages(identity.organizationId,c.req.param("id"));return c.json({data:rows.results});});
 api.post("/conversations/:id/messages",async c=>{const identity=c.get("identity") as {organizationId:string};const body=await c.req.json<{role?:string;content?:string}>();if(!body.content)return c.json({error:{code:"VALIDATION_ERROR",message:"content is required"}},400);const id=await new Db(c.env).addMessage(identity.organizationId,c.req.param("id"),body.role??"user",body.content);return c.json({id},201);});
 
-api.get("/memory",async c=>{const identity=c.get("identity") as {organizationId:string;userId?:string};const rows=await new Db(c.env).listMemories(identity.organizationId,identity.userId);return c.json({data:rows.results});});
+api.get("/memory",async c=>{const identity=c.get("identity");const rows=await new Db(c.env).listMemories(identity.organizationId,identity.userId);return c.json({data:rows.results});});
 api.post("/memory",async c=>{const identity=c.get("identity") as {organizationId:string;userId?:string};const body=await c.req.json<{content?:string;type?:string;importance?:number;expiresAt?:string}>();if(!body.content)return c.json({error:{code:"VALIDATION_ERROR",message:"content is required"}},400);const id=await new Db(c.env).createMemory(identity.organizationId,identity.userId,body.type??"fact",body.content,body.importance??0.5,body.expiresAt);return c.json({id},201);});
 api.delete("/memory/:id",async c=>{const identity=c.get("identity") as {organizationId:string};await new Db(c.env).deleteMemory(identity.organizationId,c.req.param("id"));return c.body(null,204);});
