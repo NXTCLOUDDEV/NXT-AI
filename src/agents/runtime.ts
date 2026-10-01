@@ -21,7 +21,16 @@ export class AgentRuntime {
       const raw=out.text.trim();
       let call:unknown;
       try{call=JSON.parse(raw);}catch{return {text:out.text,verified:false,steps:step,events};}
-      if(!call || typeof call!=="object" || typeof (call as any).tool!=="string") return {text:out.text,verified:false,steps:step,events};
+      if(!call || typeof call!=="object" || typeof (call as any).tool!=="string"){
+        const verification=await this.deps.model.generate({messages:[
+          {role:"system",content:"You are NXT AI's verification layer. Do not reveal private reasoning. Evaluate only whether the proposed answer is sufficiently supported by the available execution evidence. Return JSON only: {"verified":true|false,"reason":"brief reason"}."},
+          {role:"user",content:JSON.stringify({request:input.request,answer:out.text,executionEvents:events.filter(e=>e.type==="tool_result"||e.type==="tool_error")})}
+        ]});
+        let verified=false;let reason="Verification did not produce a valid result.";
+        try{const parsed=JSON.parse(verification.text);verified=parsed.verified===true;reason=String(parsed.reason??reason);}catch{}
+        events.push({type:"verification",data:{verified,reason}});
+        return {text:out.text,verified,steps:step,events};
+      }
       const tool=this.deps.tools.get((call as any).tool);
       if(!tool) return {text:"I could not safely execute that action because the requested tool is unavailable.",verified:false,steps:step,events:[...events,{type:"tool_error",data:{tool:(call as any).tool}}]};
       const ctx:ToolContext={requestId:input.requestId,organizationId:input.organizationId,userId:input.userId,permissions:new Set(input.permissions??[])};
