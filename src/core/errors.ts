@@ -1,0 +1,3 @@
+export type ErrorCode = "VALIDATION_ERROR"|"UNAUTHORIZED"|"FORBIDDEN"|"NOT_FOUND"|"PROVIDER_ERROR"|"TOOL_ERROR"|"TIMEOUT"|"INTERNAL_ERROR";
+export class NxtError extends Error { constructor(public readonly code:ErrorCode,message:string,public readonly retryable=false,public readonly details?:Record<string,unknown>){super(message);this.name="NxtError";} }
+export function errorResponse(error:unknown,requestId:string):Response { const e=error instanceof NxtError?error:new NxtError("INTERNAL_ERROR","An unexpected error occurred."); const status=e.code==="VALIDATION_ERROR"?400:e.code==="UNAUTHORIZED"?401:e.code==="FORBIDDEN"?403:e.code==="NOT_FOUND"?404:500; return Response.json({error:{code:e.code,message:e.message,retryable:e.retryable,requestId}},{status}); }
