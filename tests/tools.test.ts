@@ -1,3 +1,2 @@
-import {describe,expect,it} from "vitest";
-import {ToolRegistry} from "../src/tools/types";
-describe("tool registry",()=>{it("rejects duplicate ids",()=>{const r=new ToolRegistry();const t={id:"x",name:"x",description:"x",version:"1",inputSchema:{},permissions:[],execute:async()=>null};r.register(t);expect(()=>r.register(t)).toThrow();});});
+import {describe,expect,it} from "vitest";import {ToolRegistry} from "../src/tools/types";
+describe("tool registry",()=>{it("rejects duplicate ids",()=>{const r=new ToolRegistry();const t={id:"x",name:"x",description:"x",version:"1",inputSchema:{},permissions:[],execute:async()=>null};r.register(t);expect(()=>r.register(t)).toThrow();});it("enforces declared permissions",async()=>{const r=new ToolRegistry();r.register({id:"secure",name:"secure",description:"secure",version:"1",inputSchema:{},permissions:["tool:secure"],execute:async()=>({ok:true})});await expect(r.invoke("secure",{}, {requestId:"r",permissions:new Set()})).rejects.toThrow("permission");});});
