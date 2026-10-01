@@ -1,5 +1,6 @@
 import type {Env} from "../env";import {id,now} from "../core/types";
 export class Db{constructor(private readonly env:Env){}
+async ensureOrganization(orgId:string,name="Default Organization"){await this.env.DB.prepare("INSERT OR IGNORE INTO organizations(id,name) VALUES(?,?)").bind(orgId,name).run();return orgId;}
 async createOrganization(name:string){const orgId=id("org");await this.env.DB.prepare("INSERT INTO organizations(id,name,created_at,updated_at) VALUES(?,?,?,?)").bind(orgId,name,now(),now()).run();return orgId;}
 async createConversation(orgId:string,title:string){const conversationId=id("conv");await this.env.DB.prepare("INSERT INTO conversations(id,organization_id,title,created_at,updated_at) VALUES(?,?,?,?,?)").bind(conversationId,orgId,title,now(),now()).run();return conversationId;}
 async addMessage(orgId:string,conversationId:string,role:string,content:string){const messageId=id("msg");await this.env.DB.prepare("INSERT INTO messages(id,organization_id,conversation_id,role,content,created_at) VALUES(?,?,?,?,?,?)").bind(messageId,orgId,conversationId,role,content,now()).run();return messageId;}
