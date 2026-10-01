@@ -4,6 +4,7 @@ import type {Env} from "./env";
 import {errorResponse} from "./core/errors";
 import {api} from "./api";
 import {frontend} from "./frontend";
+import {processTask} from "./tasks/processor";
 
 const app=new Hono<{Bindings:Env}>();
 app.use("*",async(c,next)=>{c.header("x-request-id",c.req.header("x-request-id")??crypto.randomUUID());await next();});
@@ -14,4 +15,7 @@ app.route("/api/v1",api);
 app.notFound(c=>errorResponse(new Error("Not found"),c.req.header("x-request-id")??"unknown"));
 app.onError((e,c)=>errorResponse(e,c.req.header("x-request-id")??"unknown"));
 
-export default {fetch(request:Request,env:Env,ctx:ExecutionContext){return routeAgentRequest(request,env) ?? app.fetch(request,env,ctx);}};
+export default {
+  fetch(request:Request,env:Env,ctx:ExecutionContext){return routeAgentRequest(request,env) ?? app.fetch(request,env,ctx);},
+  async queue(batch:any,env:Env){for(const message of batch.messages){try{await processTask(env,message.body.taskId);message.ack();}catch(error){console.error("task processing failed",error);message.retry();}}}
+};
