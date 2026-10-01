@@ -27,7 +27,7 @@ export class AgentRuntime {
       const ctx:ToolContext={requestId:input.requestId,organizationId:input.organizationId,userId:input.userId,permissions:new Set(input.permissions??[])};
       events.push({type:"tool_start",data:{tool:tool.id}});
       try{
-        const result=await tool.execute((call as any).input,ctx);
+        const result=await this.deps.tools.invoke(tool.id,(call as any).input,ctx);
         events.push({type:"tool_result",data:{tool:tool.id}});
         messages=[...messages,{role:"assistant",content:raw},{role:"tool",content:JSON.stringify(result)}];
       }catch(error){
