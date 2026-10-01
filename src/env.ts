@@ -1,1 +1,2 @@
-export interface Env {DB:D1Database;ENVIRONMENT?:string;OPENAI_API_KEY?:string;ANTHROPIC_API_KEY?:string;GOOGLE_API_KEY?:string;NXT_DEFAULT_PROVIDER?:string;NXT_DEFAULT_MODEL?:string;}
+import type {NxtAgent} from "./agents/NxtAgent";
+export interface Env {DB:D1Database;NxtAgent:DurableObjectNamespace<NxtAgent>;ENVIRONMENT?:string;OPENAI_API_KEY?:string;ANTHROPIC_API_KEY?:string;GOOGLE_API_KEY?:string;NXT_DEFAULT_PROVIDER?:string;NXT_DEFAULT_MODEL?:string;}
