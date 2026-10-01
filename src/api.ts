@@ -32,6 +32,7 @@ api.post("/tasks",async c=>{
   const body=await c.req.json<{input?:string}>();
   if(typeof body.input!=="string"||body.input.trim().length===0)return c.json({error:{code:"VALIDATION_ERROR",message:"input is required"}},400);
   const taskId=await new TaskService(c.env).create(identity.organizationId,body.input.trim());
+  await c.env.TASKS.send({taskId});
   return c.json({id:taskId,status:"queued"},202);
 });
 
