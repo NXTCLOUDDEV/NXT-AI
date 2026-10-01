@@ -15,7 +15,7 @@ type Identity={organizationId:string;userId?:string};
 export const api=new Hono<{Bindings:Env;Variables:{identity:Identity}}>();
 api.use("*",async(c,next)=>{const a=auth(c);if(a instanceof Response)return a; c.set("identity",a as Identity);await next();});
 
-api.get("/models",c=>c.json({data:[{provider:"openai",configured:Boolean(c.env.OPENAI_API_KEY)},{provider:"anthropic",configured:Boolean(c.env.ANTHROPIC_API_KEY)}]}));
+api.get("/models",c=>c.json({data:[{provider:"workers-ai",configured:Boolean(c.env.AI)},{provider:"openai",configured:Boolean(c.env.OPENAI_API_KEY)},{provider:"anthropic",configured:Boolean(c.env.ANTHROPIC_API_KEY)}]}));
 api.get("/usage",async c=>{const identity=c.get("identity");return c.json({data:(await new Db(c.env).usageSummary(identity.organizationId)).results});});
 
 api.post("/chat",async c=>{
