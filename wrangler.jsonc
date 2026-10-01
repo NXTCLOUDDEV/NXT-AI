@@ -8,5 +8,5 @@
   "d1_databases":[{"binding":"DB","database_name":"nxt-ai-db","database_id":"e6512948-73e7-4330-955a-475878129d05","migrations_dir":"migrations"}],
   "durable_objects":{"bindings":[{"name":"NxtAgent","class_name":"NxtAgent"}]},
   "migrations":[{"tag":"v1","new_sqlite_classes":["NxtAgent"]}],
-  "queues":{"producers":[{"binding":"TASKS","queue":"nxt-ai-tasks"}],"consumers":[{"queue":"nxt-ai-tasks","max_batch_size":10,"max_batch_timeout":5,"max_retries":3}]}
+  "queues":{"producers":[{"binding":"TASKS","queue":"nxt-ai-tasks"}],"consumers":[{"queue":"nxt-ai-tasks","max_batch_size":10,"max_batch_timeout":5,"max_retries":3,"dead_letter_queue":"nxt-ai-tasks-dlq"}]}
 }
