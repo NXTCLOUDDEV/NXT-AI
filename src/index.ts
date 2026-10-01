@@ -1,5 +1,4 @@
 import {Hono} from "hono";
-import {routeAgentRequest} from "agents";
 import type {Env} from "./env";
 import {errorResponse} from "./core/errors";
 import {api} from "./api";
@@ -20,6 +19,6 @@ app.onError((e,c)=>errorResponse(e,c.req.header("x-request-id")??"unknown"));
 export {NxtAgent};
 
 export default {
-  fetch(request:Request,env:Env,ctx:ExecutionContext){return routeAgentRequest(request,env) ?? app.fetch(request,env,ctx);},
+  fetch(request:Request,env:Env,ctx:ExecutionContext){return app.fetch(request,env,ctx);},
   async queue(batch:any,env:Env){for(const message of batch.messages){try{await processTask(env,message.body.taskId);message.ack();}catch(error){console.error("task processing failed",error);message.retry();}}}
 };
