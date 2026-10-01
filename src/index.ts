@@ -1,0 +1,10 @@
+import {Hono} from "hono";
+import type {Env} from "./env";
+import {errorResponse} from "./core/errors";
+const app=new Hono<{Bindings:Env}>();
+app.use("*",async(c,next)=>{c.header("x-request-id",c.req.header("x-request-id")??crypto.randomUUID());await next();});
+app.get("/health",c=>c.json({ok:true,service:"nxt-ai",environment:c.env.ENVIRONMENT??"development"}));
+app.get("/api/v1/health",c=>c.json({ok:true,service:"nxt-ai",version:"v1"}));
+app.notFound(c=>errorResponse(new Error("Not found"),c.req.header("x-request-id")??"unknown"));
+app.onError((e,c)=>errorResponse(e,c.req.header("x-request-id")??"unknown"));
+export default app;
