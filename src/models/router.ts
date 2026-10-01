@@ -1,2 +1,2 @@
-import type {Env} from "../env";import {AnthropicProvider,OpenAIProvider,WorkersAIProvider,ModelRouter} from "./providers";
-export function createModelRouter(env:Env){return new ModelRouter(new Map([["workers-ai",new WorkersAIProvider(env)],["openai",new OpenAIProvider(env)],["anthropic",new AnthropicProvider(env)]]));}
+import type {Env} from "../env";import type {ModelProvider} from "./types";import {AnthropicProvider,OpenAIProvider,WorkersAIProvider,ModelRouter} from "./providers";
+export function createModelRouter(env:Env){const providers=new Map<string,ModelProvider>();providers.set("workers-ai",new WorkersAIProvider(env));providers.set("openai",new OpenAIProvider(env));providers.set("anthropic",new AnthropicProvider(env));return new ModelRouter(providers);}
