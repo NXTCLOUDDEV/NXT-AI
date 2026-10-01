@@ -1,6 +1,11 @@
 ENVIRONMENT=development
 NXT_DEFAULT_PROVIDER=openai
 NXT_DEFAULT_MODEL=gpt-4.1-mini
+# Optional fallback provider
+# NXT_FALLBACK_PROVIDER=anthropic
+# Optional cost accounting, USD per 1M tokens
+# NXT_COST_INPUT_PER_MILLION=0
+# NXT_COST_OUTPUT_PER_MILLION=0
 # Set locally; never commit real credentials.
 # NXT_API_KEY=
 # OPENAI_API_KEY=
