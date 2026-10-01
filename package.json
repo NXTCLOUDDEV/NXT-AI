@@ -1,0 +1,6 @@
+{
+  "name":"nxt-ai","version":"0.1.0","private":true,"type":"module",
+  "scripts":{"dev":"wrangler dev","build":"wrangler deploy --dry-run","deploy":"wrangler deploy","typecheck":"tsc --noEmit","test":"vitest run","test:watch":"vitest"},
+  "dependencies":{"agents":"latest","hono":"latest","zod":"latest"},
+  "devDependencies":{"@cloudflare/workers-types":"latest","typescript":"latest","vitest":"latest","wrangler":"latest"}
+}
