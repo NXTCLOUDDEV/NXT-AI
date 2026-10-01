@@ -23,8 +23,8 @@ api.post("/chat",async c=>{
   const body=await c.req.json<{messages?:Array<{role:"system"|"user"|"assistant"|"tool";content:string}>;message?:string;provider?:string;model?:string}>();
   const messages=body.messages??(body.message?[{role:"user",content:body.message}]:[]);
   if(messages.length===0)return c.json({error:{code:"VALIDATION_ERROR",message:"message or messages is required"}},400);
-  const provider=body.provider??c.env.NXT_DEFAULT_PROVIDER??"openai";
-  try{const started=Date.now();const out=await createModelRouter(c.env).generate(provider,{messages,model:body.model??c.env.NXT_DEFAULT_MODEL});const db=new Db(c.env);const inputTokens=out.usage?.inputTokens??0;const outputTokens=out.usage?.outputTokens??0;const inputRate=Number(c.env.NXT_COST_INPUT_PER_MILLION??0);const outputRate=Number(c.env.NXT_COST_OUTPUT_PER_MILLION??0);const costUsd=(inputTokens*inputRate+outputTokens*outputRate)/1_000_000;await db.addUsage(identity.organizationId,provider,out.model,inputTokens,outputTokens,Date.now()-started,costUsd);return c.json({data:{text:out.text,model:out.model,provider:out.provider,usage:out.usage}});}
+  const provider=body.provider??c.env.NXT_DEFAULT_PROVIDER??"openai";const providers=[provider,...(c.env.NXT_FALLBACK_PROVIDER?[c.env.NXT_FALLBACK_PROVIDER]:[])];
+  try{const started=Date.now();const out=await createModelRouter(c.env).generateWithFallback(providers,{messages,model:body.model??c.env.NXT_DEFAULT_MODEL});const db=new Db(c.env);const inputTokens=out.usage?.inputTokens??0;const outputTokens=out.usage?.outputTokens??0;const inputRate=Number(c.env.NXT_COST_INPUT_PER_MILLION??0);const outputRate=Number(c.env.NXT_COST_OUTPUT_PER_MILLION??0);const costUsd=(inputTokens*inputRate+outputTokens*outputRate)/1_000_000;await db.addUsage(identity.organizationId,provider,out.model,inputTokens,outputTokens,Date.now()-started,costUsd);return c.json({data:{text:out.text,model:out.model,provider:out.provider,usage:out.usage}});}
   catch(error){return c.json({error:{code:"PROVIDER_ERROR",message:error instanceof Error?error.message:"Model provider failed",retryable:true}},502);}
 });
 
