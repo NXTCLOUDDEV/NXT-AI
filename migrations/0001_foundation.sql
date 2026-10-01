@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS organizations (id TEXT PRIMARY KEY,name TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,deleted_at TEXT);
+CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,email TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,deleted_at TEXT,UNIQUE(organization_id,email),FOREIGN KEY(organization_id) REFERENCES organizations(id));
+CREATE TABLE IF NOT EXISTS audit_logs (id TEXT PRIMARY KEY,organization_id TEXT,actor_user_id TEXT,action TEXT NOT NULL,resource_type TEXT,resource_id TEXT,metadata_json TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(organization_id) REFERENCES organizations(id),FOREIGN KEY(actor_user_id) REFERENCES users(id));
+CREATE INDEX IF NOT EXISTS idx_users_org ON users(organization_id);
+CREATE INDEX IF NOT EXISTS idx_audit_org_created ON audit_logs(organization_id,created_at);
